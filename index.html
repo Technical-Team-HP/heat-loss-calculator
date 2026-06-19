@@ -16,6 +16,8 @@
         .big-number { font-size: 38px; font-weight: bold; color: #2563eb; margin: 15px 0; }
         .btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         .btn:hover { background: #1d4ed8; }
+        .helper-link { display: inline-block; margin-top: 5px; font-size: 12px; color: #2563eb; text-decoration: none; }
+        .helper-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -28,6 +30,7 @@
             <div class="input-group">
                 <label>Total Internal Floor Area (m²)</label>
                 <input type="number" id="area" value="100">
+                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" class="helper-link">Find your floor area on your EPC</a>
             </div>
 
             <div class="input-group">
@@ -36,6 +39,7 @@
                     <option value="1.5" selected>Pre-2000 Property (Drafty)</option>
                     <option value="0.5">Post-2000 Property (Tighter)</option>
                 </select>
+                <a href="https://propertychecker.co.uk/" target="_blank" class="helper-link">Check your property age</a>
             </div>
 
             <div class="input-group">
@@ -51,6 +55,7 @@
                     <option value="1.0">Timber Frame (Post-1960)</option>
                     <option value="2.5">Timber Frame (Pre-1960)</option>
                 </select>
+                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" class="helper-link">Find your wall type on your EPC</a>
             </div>
 
             <input type="button" class="btn" value="Calculate Heat Loss" onclick="runCalc()">
@@ -72,7 +77,6 @@ function runCalc() {
         var areaInput = document.getElementById('area').value;
         var totalArea = parseFloat(areaInput);
         
-        // Handle empty or invalid numeric inputs gracefully
         if (isNaN(totalArea) || totalArea <= 0) { 
             totalArea = 100; 
             document.getElementById('area').value = 100; 
@@ -123,7 +127,6 @@ function runCalc() {
     }
 }
 
-// Safer initialization strategy to make sure DOM elements exist
 document.addEventListener("DOMContentLoaded", function() {
     runCalc();
 });
