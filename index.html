@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Volumetric Ventilation Heat Loss Calculator</title>
+    <style>
+        body { font-family: sans-serif; background: #f1f5f9; padding: 20px; color: #334155; }
+        .wrapper { max-width: 850px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h1 { color: #1e3a8a; text-align: center; margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
+        @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 16px; background: #fff; }
+        .results-box { background: #eff6ff; border: 2px solid #bfdbfe; padding: 20px; border-radius: 8px; text-align: center; }
+        .big-number { font-size: 34px; font-weight: bold; color: #2563eb; margin: 10px 0; }
+        .btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn:hover { background: #1d4ed8; }
+        .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px dashed #e2e8f0; }
+        .fixed-notes { font-size: 12px; color: #64748b; background: #f8fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px; border-left: 3px solid #cbd5e1; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h1>Home Heat Loss Calculator</h1>
+    
+    <div class="grid">
+        <div>
+            <div class="fixed-notes">
+                <strong>Fixed Settings:</strong> Detached | 2 Storeys | 200mm Loft Insulation (U: 0.21) | 23°C Temp Difference (ΔT)
+            </div>
+
+            <div class="input-group">
+                <label>Total Internal Floor Area (m²)</label>
+                <input type="number" id="area" value="100">
+            </div>
+
+            <div class="input-group">
+                <label>Property Building Era (For Ventilation / Air tightness)</label>
+                <select id="airEra">
+                    <option value="1.5" selected>Pre-2000 Property (Drafty / 1.5 ACH)</option>
+                    <option value="0.5">Post-2000 Property (Tighter / 0.5 ACH)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Wall Type &amp; Status</label>
+                <select id="wallSelection">
+                    <option value="0.42" selected>Cavity Wall (Post-1960, Insulated) [U: 0.42]</option>
+                    <option value="0.77">Cavity Wall (Post-1960, Open) [U: 0.77]</option>
+                    <option value="0.56">Cavity Wall (Pre-1960, Insulated) [U: 0.56]</option>
+                    <option value="1.37">Cavity Wall (Pre-1960, Open) [U: 1.37]</option>
+                    <option value="2.11">Solid Wall [U: 2.11]</option>
+                    <option value="2.23">Stone Wall [U: 2.23]</option>
+                    <option value="0.43">Timber Frame [U: 0.43]</option>
+                </select>
+            </div>
+
+            <input type="button" class="btn" value="Calculate Heat Loss" onclick="runCalc()">
+        </div>
+
+        <div>
+            <div class="results-box">
+                <div style="font-weight: bold; color: #1e40af; font-size: 13px;">ESTIMATED PEAK LOSS</div>
+                <div class="big-number" id="displayWatts">--- W</div>
+                <div style="font-weight: bold; color: #475569; font-size: 18px;" id="displayKw">--- kW</div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div style="font-weight: bold; margin-bottom: 10px; color: #475569;">Loss Breakdown:</div>
+                <div class="row"><span>Walls:</span><span id="boxWalls">-</span></div>
+                <div class="row"><span>Solid Floor (U: 0.55):</span><span id="boxFloor">-</span></div>
+                <div class="row"><span>Roof / Loft (U: 0.21):</span><span id="boxRoof">-</span></div>
+                <div class="row"><span>Windows &amp; Doors (U: 2.8):</span><span id="boxWindows">-</span></div>
+                <div class="row"><span>Ventilation (Volumetric):</span><span id="boxDrafts">-</span></div>
+            </div>
+            
+            <div style="margin-top: 15px; font-size: 11px; color: #64748b; font-style: italic; line-height: 1.3;">
+                Calculated on an average ceiling height of 2.8m per storey. Ventilation loss formula used: Volume × ACH × 0.33 × ΔT.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function runCalc() {
+    try {
+        var totalArea = parseFloat(document.getElementById('area').value);
+        var achRate = parseFloat(document.getElementById('airEra').value);
+        var wallU = parseFloat(document.getElementById('wallSelection').value);
+
+        // Enforced hardcoded constants
+        var typeMod = 1.0; // Detached
+        var storeys = 2;
+        var roofU = 0.21;  // 200mm insulation
+        var dT = 23;       // 23°C Temperature Difference
+        
+        if (!totalArea || totalArea <= 0) { totalArea = 100; document.getElementById('area').value = 100; }
+
+        var floorU = 0.55; 
+        var windowU = 2.80; 
+        var standardCeilingHeight = 2.8;
+
+        // 1. Structural Geometry Setup
+        var footprint = totalArea / storeys;
+        var perimeter = Math.sqrt(footprint) * 4 * typeMod;
+        var totalHeight = storeys * standardCeilingHeight;
+                
+        var grossWall = perimeter * totalHeight;
+        var windowArea = grossWall * 0.15;
+        var netWall = grossWall - windowArea;
+
+        // 2. Structural Fabric Energy Loss
+        var wallL = wallU * netWall * dT;
+        var floorL = floorU * footprint * dT;
+        var roofL = roofU * footprint * dT;
+        var winL = windowU * windowArea * dT;
+        var fabricTotal = wallL + floorL + roofL + winL;
+
+        // 3. Volumetric Ventilation Math
+        var propertyVolume = totalArea * standardCeilingHeight; 
+        var ventilationLoss = propertyVolume * achRate * 0.33 * dT;
+
+        // 4. Combined Absolute Result Matrix
+        var grandTotal = fabricTotal + ventilationLoss;
+
+        // Write directly to UI elements
+        document.getElementById('displayWatts').innerHTML = Math.round(grandTotal).toLocaleString() + " W";
+        document.getElementById('displayKw').innerHTML = (grandTotal / 1000).toFixed(2) + " kW Required";
+                
+        document.getElementById('boxWalls').innerHTML = Math.round(wallL).toLocaleString() + " W";
+        document.getElementById('boxFloor').innerHTML = Math.round(floorL).toLocaleString() + " W";
+        document.getElementById('boxRoof').innerHTML = Math.round(roofL).toLocaleString() + " W";
+        document.getElementById('boxWindows').innerHTML = Math.round(winL).toLocaleString() + " W";
+        document.getElementById('boxDrafts').innerHTML = Math.round(ventilationLoss).toLocaleString() + " W (" + achRate + " ACH)";
+    } catch(err) {
+        alert("Calculation Error: " + err.message);
+    }
+}
+window.onload = runCalc;
+</script>
+</body>
+</html>
