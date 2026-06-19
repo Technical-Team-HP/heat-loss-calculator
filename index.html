@@ -12,122 +12,195 @@
         .input-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; }
         select, input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 16px; background: #fff; }
-        .results-box { background: #eff6ff; border: 2px solid #bfdbfe; padding: 30px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; box-sizing: border-box; }
+        .results-box { background: #eff6ff; border: 2px solid #bfdbfe; padding: 30px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; box-sizing: border-box; transition: all 0.3s ease; }
         .big-number { font-size: 38px; font-weight: bold; color: #2563eb; margin: 15px 0; }
         .btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         .btn:hover { background: #1d4ed8; }
         .helper-link { display: inline-block; margin-top: 5px; font-size: 12px; color: #2563eb; text-decoration: none; }
         .helper-link:hover { text-decoration: underline; }
+        .status-text { font-weight: bold; font-size: 13px; margin-top: 15px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4; }
+        
+        /* New Property Area Calculator Panel Styles */
+        .area-calc-panel { border: 1px dashed #cbd5e1; background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 25px; }
+        .area-calc-title { font-weight: bold; font-size: 15px; color: #1e3a8a; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        .inline-inputs { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px; }
+        .inline-inputs .input-group { margin-bottom: 0; flex: 1; }
+        .calc-sym { align-self: flex-end; padding-bottom: 10px; font-weight: bold; color: #64748b; font-size: 18px; }
+        .btn-secondary { background: #475569; }
+        .btn-secondary:hover { background: #334155; }
     </style>
 </head>
 <body>
-
-<div class="wrapper">
-    <h1>Home Heat Loss Calculator</h1>
-    
-    <div class="grid">
-        <div>
-            <div class="input-group">
-                <label>Total Internal Floor Area (m²)</label>
-                <input type="number" id="area" value="100">
-                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" class="helper-link">Find your floor area on your EPC</a>
+<div class="wrapper">    
+    <h1>Home Heat Loss Calculator</h1>        
+    <div class="grid">        
+        <div>            
+            <div class="input-group">                
+                <label>Total Internal Floor Area (m²)</label>                
+                <input type="number" id="area" value="100">                
+                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" class="helper-link">Find your floor area on your EPC</a>            
             </div>
-
-            <div class="input-group">
-                <label>Property Building Era (For Ventilation / Air tightness)</label>
-                <select id="airEra">
-                    <option value="1.5" selected>Pre-2000 Property (Drafty)</option>
-                    <option value="0.5">Post-2000 Property (Tighter)</option>
-                </select>
-                <a href="https://propertychecker.co.uk/" target="_blank" class="helper-link">Check your property age</a>
+            
+            <div class="input-group">                
+                <label>Property Building Era (For Ventilation / Air tightness)</label>                
+                <select id="airEra">                    
+                    <option value="1.5" selected>Pre-2000 Property (Drafty)</option>                    
+                    <option value="0.5">Post-2000 Property (Tighter)</option>                
+                </select>                
+                <a href="https://propertychecker.co.uk/" target="_blank" class="helper-link">Check your property age</a>            
             </div>
+            
+            <div class="input-group">                
+                <label>Wall Type &amp; Status</label>                
+                <select id="wallSelection">                    
+                    <option value="0.42" selected>Cavity Wall (Post-1960, Insulated)</option>                    
+                    <option value="0.77">Cavity Wall (Post-1960, Open)</option>                    
+                    <option value="0.56">Cavity Wall (Pre-1960, Insulated)</option>                    
+                    <option value="1.37">Cavity Wall (Pre-1960, Open)</option>                    
+                    <option value="2.11">Solid Wall</option>                    
+                    <option value="2.23">Stone Wall</option>                    
+                    <option value="0.6">Solid Wall / Stone Wall (Insulated)</option>                    
+                    <option value="1.0">Timber Frame (Post-1960)</option>                    
+                    <option value="2.5">Timber Frame (Pre-1960)</option>                
+                </select>                
+                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" class="helper-link">Find your wall type on your EPC</a>            
+            </div>            
+            
+            <input type="button" class="btn" value="Calculate Heat Loss" onclick="runCalc()">        
 
-            <div class="input-group">
-                <label>Wall Type &amp; Status</label>
-                <select id="wallSelection">
-                    <option value="0.42" selected>Cavity Wall (Post-1960, Insulated)</option>
-                    <option value="0.77">Cavity Wall (Post-1960, Open)</option>
-                    <option value="0.56">Cavity Wall (Pre-1960, Insulated)</option>
-                    <option value="1.37">Cavity Wall (Pre-1960, Open)</option>
-                    <option value="2.11">Solid Wall</option>
-                    <option value="2.23">Stone Wall</option>
-                    <option value="0.6">Solid Wall / Stone Wall (Insulated)</option>
-                    <option value="1.0">Timber Frame (Post-1960)</option>
-                    <option value="2.5">Timber Frame (Pre-1960)</option>
-                </select>
-                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" class="helper-link">Find your wall type on your EPC</a>
+            <div class="area-calc-panel">
+                <div class="area-calc-title">📐 Property Area Calculator</div>
+                <div class="inline-inputs">
+                    <div class="input-group">
+                        <label>Width (m)</label>
+                        <input type="number" id="calcWidth" placeholder="0" oninput="autoCalcArea()">
+                    </div>
+                    <div class="calc-sym">×</div>
+                    <div class="input-group">
+                        <label>Depth (m)</label>
+                        <input type="number" id="calcDepth" placeholder="0" oninput="autoCalcArea()">
+                    </div>
+                    <div class="calc-sym">×</div>
+                    <div class="input-group">
+                        <label>Floors</label>
+                        <input type="number" id="calcFloors" value="1" min="1" oninput="autoCalcArea()">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Calculated Internal Floor Area: <span id="calcResultDisplay" style="color: #2563eb;">0</span> m²</label>
+                </div>
+                <input type="button" class="btn btn-secondary" value="Use This Total Floor Area" onclick="populateFloorArea()">
             </div>
-
-            <input type="button" class="btn" value="Calculate Heat Loss" onclick="runCalc()">
-        </div>
-
-        <div>
-            <div class="results-box">
-                <div style="font-weight: bold; color: #1e40af; font-size: 14px; letter-spacing: 0.5px;">ESTIMATED PEAK LOSS</div>
-                <div class="big-number" id="displayWatts">--- W</div>
-                <div style="font-weight: bold; color: #475569; font-size: 20px;" id="displayKw">--- kW</div>
-            </div>
-        </div>
+        </div>        
+        
+        <div>            
+            <div class="results-box" id="resultsBox">                
+                <div style="font-weight: bold; color: #1e40af; font-size: 14px; letter-spacing: 0.5px;">ESTIMATED PEAK LOSS</div>                
+                <div class="big-number" id="displayWatts">--- W</div>                
+                <div style="font-weight: bold; color: #475569; font-size: 20px;" id="displayKw">--- kW</div>                
+                <div id="statusMessage" class="status-text"></div>            
+            </div>        
+        </div>    
     </div>
 </div>
 
 <script>
-function runCalc() {
-    try {
-        var areaInput = document.getElementById('area').value;
-        var totalArea = parseFloat(areaInput);
+// Logic to handle internal area calculation updates dynamically
+function autoCalcArea() {
+    var width = parseFloat(document.getElementById('calcWidth').value) || 0;
+    var depth = parseFloat(document.getElementById('calcDepth').value) || 0;
+    var floors = parseFloat(document.getElementById('calcFloors').value) || 1;
+    
+    var calculatedM2 = width * depth * floors;
+    document.getElementById('calcResultDisplay').innerText = calculatedM2 % 1 === 0 ? calculatedM2 : calculatedM2.toFixed(2);
+}
+
+// Moves calculated values directly up into primary structure input tracking configurations
+function populateFloorArea() {
+    var width = parseFloat(document.getElementById('calcWidth').value) || 0;
+    var depth = parseFloat(document.getElementById('calcDepth').value) || 0;
+    var floors = parseFloat(document.getElementById('calcFloors').value) || 1;
+    
+    var finalArea = width * depth * floors;
+    
+    if (finalArea <= 0) {
+        alert("Please enter valid width, depth, and floor parameters to generate an area value.");
+        return;
+    }
+    
+    document.getElementById('area').value = finalArea % 1 === 0 ? finalArea : finalArea.toFixed(2);
+    runCalc(); // Runs primary calculator loop immediately with new variable sets
+}
+
+function runCalc() {    
+    try {        
+        var areaInput = document.getElementById('area').value;        
+        var totalArea = parseFloat(areaInput);                
+        if (isNaN(totalArea) || totalArea <= 0) {              
+            totalArea = 100;              
+            document.getElementById('area').value = 100;         
+        }        
+        var achRate = parseFloat(document.getElementById('airEra').value);        
+        var wallU = parseFloat(document.getElementById('wallSelection').value);        
         
-        if (isNaN(totalArea) || totalArea <= 0) { 
-            totalArea = 100; 
-            document.getElementById('area').value = 100; 
-        }
-
-        var achRate = parseFloat(document.getElementById('airEra').value);
-        var wallU = parseFloat(document.getElementById('wallSelection').value);
-
-        // Enforced hardcoded constants
-        var typeMod = 1.0; // Detached
-        var storeys = 2;
-        var roofU = 0.21;  // 200mm insulation
-        var dT = 23;       // 23°C Temperature Difference
+        // Enforced hardcoded constants        
+        var typeMod = 1.0; // Detached        
+        var storeys = 2;        
+        var roofU = 0.21;  // 200mm insulation        
+        var dT = 23;       // 23°C Temperature Difference                
+        var floorU = 0.55;                 
+        var windowU = 2.80;                 
+        var standardCeilingHeight = 2.8;        
         
-        var floorU = 0.55; 
-        var windowU = 2.80; 
-        var standardCeilingHeight = 2.8;
-
-        // 1. Structural Geometry Setup
-        var footprint = totalArea / storeys;
-        var perimeter = Math.sqrt(footprint) * 4 * typeMod;
-        var totalHeight = storeys * standardCeilingHeight;
-                
-        var grossWall = perimeter * totalHeight;
-        var windowArea = grossWall * 0.15;
-        var netWall = grossWall - windowArea;
-
-        // 2. Structural Fabric Energy Loss
-        var wallL = wallU * netWall * dT;
-        var floorL = floorU * footprint * dT;
-        var roofL = roofU * footprint * dT;
-        var winL = windowU * windowArea * dT;
-        var fabricTotal = wallL + floorL + roofL + winL;
-
-        // 3. Volumetric Ventilation Math
-        var propertyVolume = totalArea * standardCeilingHeight; 
-        var ventilationLoss = propertyVolume * achRate * 0.33 * dT;
-
-        // 4. Combined Absolute Result Matrix
-        var grandTotal = fabricTotal + ventilationLoss;
-
-        // Write directly to UI elements
-        document.getElementById('displayWatts').innerHTML = Math.round(grandTotal).toLocaleString() + " W";
-        document.getElementById('displayKw').innerHTML = (grandTotal / 1000).toFixed(2) + " kW";
-                
-    } catch(err) {
-        alert("Calculation Error: " + err.message);
+        // 1. Structural Geometry Setup        
+        var footprint = totalArea / storeys;        
+        var perimeter = Math.sqrt(footprint) * 4 * typeMod;        
+        var totalHeight = storeys * standardCeilingHeight;                        
+        var grossWall = perimeter * totalHeight;        
+        var windowArea = grossWall * 0.15;        
+        var netWall = grossWall - windowArea;        
+        
+        // 2. Structural Fabric Energy Loss        
+        var wallL = wallU * netWall * dT;        
+        var floorL = floorU * footprint * dT;        
+        var roofL = roofU * footprint * dT;        
+        var winL = windowU * windowArea * dT;        
+        var fabricTotal = wallL + floorL + roofL + winL;        
+        
+        // 3. Volumetric Ventilation Math        
+        var propertyVolume = totalArea * standardCeilingHeight;         
+        var ventilationLoss = propertyVolume * achRate * 0.33 * dT;        
+        
+        // 4. Combined Absolute Result Matrix        
+        var grandTotal = fabricTotal + ventilationLoss;        
+        var calculatedKw = grandTotal / 1000;        
+        
+        // Write directly to UI elements        
+        document.getElementById('displayWatts').innerHTML = Math.round(grandTotal).toLocaleString() + " W";        
+        document.getElementById('displayKw').innerHTML = calculatedKw.toFixed(2) + " kW";                
+        
+        // Target elements for visual rules        
+        var resultsBox = document.getElementById('resultsBox');        
+        var statusMessage = document.getElementById('statusMessage');        
+        
+        // Threshold evaluation and styling        
+        if (calculatedKw <= 16.9) {            
+            resultsBox.style.background = "#f0fdf4"; // soft green background            
+            resultsBox.style.borderColor = "#bbf7d0";  // light green border            
+            statusMessage.style.color = "#16a34a";     // deep green text            
+            statusMessage.innerHTML = "suitable for survey";        
+        } else {            
+            resultsBox.style.background = "#fef2f2"; // soft red background            
+            resultsBox.style.borderColor = "#fecaca";  // light red border            
+            statusMessage.style.color = "#dc2626";     // deep red text            
+            statusMessage.innerHTML = "unsuitable for survey due to being outside of design scope";        
+        }                
+    } catch(err) {        
+        alert("Calculation Error: " + err.message);    
     }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {    
     runCalc();
 });
 </script>
