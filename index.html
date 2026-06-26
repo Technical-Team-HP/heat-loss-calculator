@@ -217,12 +217,9 @@ function populateFloorArea() {
 }
 
 function selectWallTypeFromImage(uValue) {
-    if (!validateCustomerDetails()) return;
-
     forcePre2000Era();
     document.getElementById('wallSelection').value = uValue;
     syncCardHighlights();
-    runCalc();
 }
 
 function syncCardHighlights() {
