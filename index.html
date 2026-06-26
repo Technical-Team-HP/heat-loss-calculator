@@ -213,7 +213,6 @@ function populateFloorArea() {
     }
 
     document.getElementById('area').value = finalArea % 1 === 0 ? finalArea : finalArea.toFixed(2);
-    runCalc();
 }
 
 function selectWallTypeFromImage(uValue) {
@@ -281,8 +280,8 @@ function setResultState(calculatedKw, grandTotal) {
     return finalStatus;
 }
 
-function runCalc(skipValidation, skipLogging) {
-    if (!skipValidation && !validateCustomerDetails()) {
+function runCalc() {
+    if (!validateCustomerDetails()) {
         return;
     }
 
@@ -324,18 +323,16 @@ function runCalc(skipValidation, skipLogging) {
 
         var finalStatus = setResultState(calculatedKw, grandTotal);
 
-        if (!skipLogging) {
-            logCalculation({
-                customerName: document.getElementById('custName').value.trim(),
-                postcode: document.getElementById('custPostcode').value.trim().toUpperCase(),
-                floorArea: totalArea,
-                propertyEra: airEraElement.options[airEraElement.selectedIndex].text,
-                wallType: wallSelectionElement.options[wallSelectionElement.selectedIndex].text,
-                watts: Math.round(grandTotal),
-                kw: calculatedKw.toFixed(2),
-                status: finalStatus
-            });
-        }
+        logCalculation({
+            customerName: document.getElementById('custName').value.trim(),
+            postcode: document.getElementById('custPostcode').value.trim().toUpperCase(),
+            floorArea: totalArea,
+            propertyEra: airEraElement.options[airEraElement.selectedIndex].text,
+            wallType: wallSelectionElement.options[wallSelectionElement.selectedIndex].text,
+            watts: Math.round(grandTotal),
+            kw: calculatedKw.toFixed(2),
+            status: finalStatus
+        });
     } catch (err) {
         alert('Calculation Error: ' + err.message);
     }
@@ -343,8 +340,6 @@ function runCalc(skipValidation, skipLogging) {
 
 function takeScreenshot() {
     if (!validateCustomerDetails()) return;
-
-    runCalc(false, false);
 
     var element = document.getElementById('captureTarget');
     var customerName = document.getElementById('custName').value.trim().replace(/\s+/g, '_');
@@ -367,7 +362,6 @@ function takeScreenshot() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    runCalc(true, true);
     syncCardHighlights();
 });
 </script>
