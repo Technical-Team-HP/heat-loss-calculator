@@ -21,16 +21,13 @@
         .helper-link:hover { text-decoration: underline; }
         .status-text { font-weight: bold; font-size: 13px; margin-top: 15px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4; }
         .status-subtext { font-size: 12px; color: #64748b; margin-top: 6px; line-height: 1.4; }
-
         .customer-panel { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 25px; }
         .panel-title { font-weight: bold; font-size: 15px; color: #1e3a8a; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; display: flex; align-items: center; gap: 6px; }
         .flex-inputs { display: flex; gap: 15px; }
         .flex-inputs .input-group { flex: 1; margin-bottom: 0; }
         @media (max-width: 500px) { .flex-inputs { flex-direction: column; gap: 15px; } }
-
         .no-epc-container { border: 2px solid #cbd5e1; border-radius: 10px; padding: 20px; margin-top: 30px; background: #fafafa; }
         .no-epc-main-title { font-weight: bold; font-size: 16px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px dashed #cbd5e1; text-align: center; }
-
         .area-calc-panel { border: 1px dashed #cbd5e1; background: #f8fafc; padding: 20px; border-radius: 8px; }
         .area-calc-title { font-weight: bold; font-size: 15px; color: #1e3a8a; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
         .area-calc-panel label { font-size: 13px; }
@@ -42,7 +39,6 @@
         .btn-screenshot { background: #0d9488; margin-top: 10px; }
         .btn-screenshot:hover { background: #0f766e; }
         .required-star { color: #dc2626; margin-left: 2px; }
-
         .wall-selector-panel { margin-top: 20px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; }
         .wall-instruction-note { font-size: 12px; color: #64748b; font-style: italic; margin-top: -10px; margin-bottom: 12px; }
         .wall-cards-container { display: flex; gap: 15px; }
@@ -54,316 +50,287 @@
     </style>
 </head>
 <body>
-<div class="wrapper" id="captureTarget">
-    <h1>Heat Loss Estimator</h1>
-    <div class="customer-panel">
-        <div class="panel-title">👤 Customer Validation Details</div>
-        <div class="flex-inputs">
-            <div class="input-group">
-                <label>Customer Name<span class="required-star">*</span></label>
-                <input type="text" id="custName" placeholder="e.g. John Doe">
-            </div>
-            <div class="input-group">
-                <label>Postcode<span class="required-star">*</span></label>
-                <input type="text" id="custPostcode" placeholder="e.g. BN1 1GE" style="text-transform: uppercase;">
-            </div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div>
-            <div class="input-group">
-                <label>Total Internal Floor Area (m²)</label>
-                <input type="number" id="area" value="100" min="0" step="0.01">
-                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" class="helper-link">Find your floor area on your EPC</a>
-            </div>
-            <div class="input-group">
-                <label>Property Building Era (For Ventilation / Air tightness)</label>
-                <select id="airEra">
-                    <option value="1.5" selected>Pre-2000 Property (Drafty)</option>
-                    <option value="0.5">Post-2000 Property (Tighter)</option>
-                </select>
-                <a href="https://propertychecker.co.uk/" target="_blank" rel="noopener noreferrer" class="helper-link">Check your property age</a>
-            </div>
-            <div class="input-group">
-                <label>Wall Type &amp; Status</label>
-                <select id="wallSelection" onchange="syncCardHighlights()">
-                    <option value="0.42" selected>Cavity Wall (Post-1960, Insulated)</option>
-                    <option value="0.77">Cavity Wall (Post-1960, Open)</option>
-                    <option value="0.56">Cavity Wall (Pre-1960, Insulated)</option>
-                    <option value="1.37">Cavity Wall (Pre-1960, Open)</option>
-                    <option value="2.11">Solid Wall</option>
-                    <option value="2.23">Stone Wall</option>
-                    <option value="0.6">Solid Wall / Stone Wall (Insulated)</option>
-                    <option value="1.0">Timber Frame (Post-1960)</option>
-                    <option value="2.5">Timber Frame (Pre-1960)</option>
-                </select>
-                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" class="helper-link">Find your wall type on your EPC</a>
-            </div>
-
-            <input type="button" class="btn" value="Calculate Heat Loss" onclick="runCalc()">
-            <input type="button" class="btn btn-screenshot" value="📸 Download Summary Screenshot" onclick="takeScreenshot()">
-
-            <div class="no-epc-container">
-                <div class="no-epc-main-title">⚠️ When no EPC available</div>
-                <div class="area-calc-panel">
-                    <div class="area-calc-title">📐 Property Area Calculator</div>
-                    <div class="inline-inputs">
-                        <div class="input-group">
-                            <label>Width (m)</label>
-                            <input type="number" id="calcWidth" placeholder="0" min="0" step="0.01" oninput="autoCalcArea()">
-                        </div>
-                        <div class="calc-sym">×</div>
-                        <div class="input-group">
-                            <label>Length (m)</label>
-                            <input type="number" id="calcDepth" placeholder="0" min="0" step="0.01" oninput="autoCalcArea()">
-                        </div>
-                        <div class="calc-sym">×</div>
-                        <div class="input-group">
-                            <label>Floors</label>
-                            <input type="number" id="calcFloors" value="1" min="1" step="1" oninput="autoCalcArea()">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Calculated Internal Floor Area: <span id="calcResultDisplay" style="color: #2563eb;">0</span> m²</label>
-                    </div>
-                    <input type="button" class="btn btn-secondary" value="Use This Total Floor Area" onclick="populateFloorArea()">
+    <div class="wrapper" id="captureTarget">
+        <h1>Heat Loss Estimator</h1>
+        
+        <div class="customer-panel">
+            <div class="panel-title">👤 Property Validation Details</div>
+            <div class="flex-inputs">
+                <div class="input-group">
+                    <label>House Number / Name<span class="required-star">*</span></label>
+                    <input type="text" id="houseIdent" placeholder="e.g. 42 or Rose Cottage">
                 </div>
-
-                <div class="wall-selector-panel">
-                    <div class="area-calc-title">🧱 Quick Select Wall Visualizer</div>
-                    <div class="wall-instruction-note">Click the wall type the customer has</div>
-                    <div class="wall-cards-container">
-                        <div class="wall-card" id="card-cavity" onclick="selectWallTypeFromImage('0.56')">
-                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='180' height='180'><rect width='200' height='200' fill='%235d6370'/><g fill='%23dea383' stroke='%235d6370' stroke-width='2'><rect x='5' y='15' width='60' height='20'/><rect x='70' y='15' width='60' height='20'/><rect x='135' y='15' width='60' height='20'/><rect x='5' y='38' width='30' height='20'/><rect x='40' y='38' width='60' height='20'/><rect x='105' y='38' width='60' height='20'/><rect x='170' y='38' width='25' height='20'/><rect x='5' y='61' width='60' height='20'/><rect x='70' y='61' width='60' height='20'/><rect x='135' y='61' width='60' height='20'/><rect x='5' y='84' width='30' height='20'/><rect x='40' y='84' width='60' height='20'/><rect x='105' y='84' width='60' height='20'/><rect x='170' y='84' width='25' height='20'/><rect x='5' y='107' width='60' height='20'/><rect x='70' y='107' width='60' height='20'/><rect x='135' y='107' width='60' height='20'/><rect x='5' y='130' width='30' height='20'/><rect x='40' y='130' width='60' height='20'/><rect x='105' y='130' width='60' height='20'/><rect x='170' y='130' width='25' height='20'/></g><text x='100' y='175' fill='white' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>TYPICAL CAVITY WALL</text></svg>" alt="Typical Cavity Wall">
-                        </div>
-                        <div class="wall-card" id="card-solid" onclick="selectWallTypeFromImage('2.11')">
-                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='180' height='180'><rect width='200' height='200' fill='%235d6370'/><g fill='%23dea383' stroke='%235d6370' stroke-width='2'><rect x='5' y='15' width='52' height='20'/><rect x='60' y='15' width='24' height='20'/><rect x='87' y='15' width='52' height='20'/><rect x='142' y='15' width='24' height='20'/><rect x='169' y='15' width='26' height='20'/><rect x='5' y='38' width='24' height='20'/><rect x='32' y='38' width='52' height='20'/><rect x='87' y='38' width='24' height='20'/><rect x='114' y='38' width='52' height='20'/><rect x='169' y='38' width='26' height='20'/><rect x='5' y='61' width='52' height='20'/><rect x='60' y='61' width='24' height='20'/><rect x='87' y='61' width='52' height='20'/><rect x='142' y='61' width='24' height='20'/><rect x='169' y='61' width='26' height='20'/><rect x='5' y='84' width='24' height='20'/><rect x='32' y='84' width='52' height='20'/><rect x='87' y='84' width='24' height='20'/><rect x='114' y='84' width='52' height='20'/><rect x='169' y='84' width='26' height='20'/><rect x='5' y='107' width='52' height='20'/><rect x='60' y='107' width='24' height='20'/><rect x='87' y='107' width='52' height='20'/><rect x='142' y='107' width='24' height='20'/><rect x='169' y='107' width='26' height='20'/><rect x='5' y='130' width='24' height='20'/><rect x='32' y='130' width='52' height='20'/><rect x='87' y='130' width='24' height='20'/><rect x='114' y='130' width='52' height='20'/><rect x='169' y='130' width='26' height='20'/></g><text x='100' y='168' fill='white' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>TYPICAL SOLID</text><text x='100' y='184' fill='white' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>BRICK WALL</text></svg>" alt="Typical Solid Brick Wall">
-                        </div>
-                        <div class="wall-card" id="card-stone" onclick="selectWallTypeFromImage('2.23')">
-                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='180' height='180'><rect width='200' height='200' fill='%23475569'/><path d='M20,130 L100,50 L180,130 Z' fill='none' stroke='%2394a3b8' stroke-width='4'/><path d='M40,110 L100,50 L160,110 Z' fill='none' stroke='%23cbd5e1' stroke-width='3'/><rect x='55' y='110' width='90' height='45' fill='none' stroke='%23cbd5e1' stroke-width='3'/><rect x='85' y='120' width='30' height='35' fill='none' stroke='%23cbd5e1' stroke-width='2'/><path d='M5,155 L195,155 M15,165 L185,165' stroke='%2364748b' stroke-width='2'/><path d='M145,110 L175,110 L175,155 L145,155 Z' fill='%2394a3b8' opacity='0.4' stroke='%23cbd5e1' stroke-width='2'/><path d='M155,115 L165,115 M155,125 L165,125 M155,135 L165,135 M155,145 L165,145' stroke='%23475569' stroke-width='2'/><text x='100' y='25' fill='white' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>STONE WALL</text><text x='100' y='40' fill='%2394a3b8' font-family='sans-serif' font-size='11' font-weight='bold' text-anchor='middle'>UNINSULATED</text></svg>" alt="Stone Wall Facade Layout">
-                        </div>
-                    </div>
+                <div class="input-group">
+                    <label>Postcode<span class="required-star">*</span></label>
+                    <input type="text" id="custPostcode" placeholder="e.g. BN1 1GE" style="text-transform: uppercase;">
                 </div>
             </div>
         </div>
 
-        <div>
-            <div class="results-box" id="resultsBox">
-                <div style="font-weight: bold; color: #1e40af; font-size: 14px; letter-spacing: 0.5px;">ESTIMATED PEAK LOSS</div>
-                <div class="big-number" id="displayWatts">--- W</div>
-                <div style="font-weight: bold; color: #475569; font-size: 20px;" id="displayKw">--- kW</div>
-                <div id="statusMessage" class="status-text"></div>
-                <div id="statusSubtext" class="status-subtext"></div>
+        <div class="grid">
+            <div>
+                <div class="input-group">
+                    <label>Total Internal Floor Area (m²)</label>
+                    <input type="number" id="area" value="100" min="0" step="0.01">
+                    <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" class="helper-link">Find your floor area on your EPC</a>
+                </div>
+                
+                <div class="input-group">
+                    <label>Property Building Era (For Ventilation / Air tightness)</label>
+                    <select id="airEra">
+                        <option value="1.5" selected>Pre-2000 Property</option>
+                        <option value="0.5">Post-2000 Property</option>
+                    </select>
+                    <a href="https://propertychecker.co.uk/" target="_blank" rel="noopener noreferrer" class="helper-link">Check your property age</a>
+                </div>
+                
+                <div class="input-group">
+                    <label>Wall Type &amp; Status</label>
+                    <select id="wallSelection" onchange="syncCardHighlights()">
+                        <option value="0.42" selected>Cavity Wall (Post-1960, Insulated)</option>
+                        <option value="0.77">Cavity Wall (Post-1960, Open)</option>
+                        <option value="0.56">Cavity Wall (Pre-1960, Insulated)</option>
+                        <option value="1.37">Cavity Wall (Pre-1960, Open)</option>
+                        <option value="2.11">Solid Wall</option>
+                        <option value="2.23">Stone Wall</option>
+                        <option value="0.6">Solid Wall / Stone Wall (Insulated)</option>
+                        <option value="1.0">Timber Frame (Post-1960)</option>
+                        <option value="2.5">Timber Frame (Pre-1960)</option>
+                    </select>
+                    <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" class="helper-link">Find your wall type on your EPC</a>
+                </div>
+
+                <input type="button" class="btn" value="Calculate Heat Loss" onclick="runCalc()">
+                <input type="button" class="btn btn-screenshot" value="📸 Download Summary Screenshot" onclick="takeScreenshot()">
+
+                <div class="no-epc-container">
+                    <div class="no-epc-main-title">⚠️ When no EPC available</div>
+                    
+                    <div class="area-calc-panel">
+                        <div class="area-calc-title">📐 Property Area Calculator</div>
+                        <div class="inline-inputs">
+                            <div class="input-group">
+                                <label>Width (m)</label>
+                                <input type="number" id="calcWidth" placeholder="0" min="0" step="0.01" oninput="autoCalcArea()">
+                            </div>
+                            <div class="calc-sym">×</div>
+                            <div class="input-group">
+                                <label>Length (m)</label>
+                                <input type="number" id="calcDepth" placeholder="0" min="0" step="0.01" oninput="autoCalcArea()">
+                            </div>
+                            <div class="calc-sym">×</div>
+                            <div class="input-group">
+                                <label>Floors</label>
+                                <input type="number" id="calcFloors" value="1" min="1" step="1" oninput="autoCalcArea()">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Calculated Internal Floor Area: <span id="calcResultDisplay" style="color: #2563eb;">0</span> m²</label>
+                        </div>
+                        <input type="button" class="btn btn-secondary" value="Use This Total Floor Area" onclick="populateFloorArea()">
+                    </div>
+
+                    <div class="wall-selector-panel">
+                        <div class="area-calc-title">🧱 Quick Select Wall Visualizer</div>
+                        <div class="wall-instruction-note">Click the wall type the customer has</div>
+                        <div class="wall-cards-container">
+                            <div class="wall-card" id="card-cavity" onclick="selectWallTypeFromImage('0.56')">
+                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='180' height='180'><rect width='200' height='200' fill='%235d6370'/><g fill='%23dea383' stroke='%235d6370' stroke-width='2'><rect x='5' y='15' width='60' height='20'/><rect x='70' y='15' width='60' height='20'/><rect x='135' y='15' width='60' height='20'/><rect x='5' y='38' width='30' height='20'/><rect x='40' y='38' width='60' height='20'/><rect x='105' y='38' width='60' height='20'/><rect x='170' y='38' width='25' height='20'/><rect x='5' y='61' width='60' height='20'/><rect x='70' y='61' width='60' height='20'/><rect x='135' y='61' width='60' height='20'/><rect x='5' y='84' width='30' height='20'/><rect x='40' y='84' width='60' height='20'/><rect x='105' y='84' width='60' height='20'/><rect x='170' y='84' width='25' height='20'/><rect x='5' y='107' width='60' height='20'/><rect x='70' y='107' width='60' height='20'/><rect x='135' y='107' width='60' height='20'/><rect x='5' y='130' width='30' height='20'/><rect x='40' y='130' width='60' height='20'/><rect x='105' y='130' width='60' height='20'/><rect x='170' y='130' width='25' height='20'/></g><text x='100' y='175' fill='white' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>TYPICAL CAVITY WALL</text></svg>" alt="Typical Cavity Wall">
+                            </div>
+                            <div class="wall-card" id="card-solid" onclick="selectWallTypeFromImage('2.11')">
+                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='180' height='180'><rect width='200' height='200' fill='%235d6370'/><g fill='%23dea383' stroke='%235d6370' stroke-width='2'><rect x='5' y='15' width='52' height='20'/><rect x='60' y='15' width='24' height='20'/><rect x='87' y='15' width='52' height='20'/><rect x='142' y='15' width='24' height='20'/><rect x='169' y='15' width='26' height='20'/><rect x='5' y='38' width='24' height='20'/><rect x='32' y='38' width='52' height='20'/><rect x='87' y='38' width='24' height='20'/><rect x='114' y='38' width='52' height='20'/><rect x='169' y='38' width='26' height='20'/><rect x='5' y='61' width='52' height='20'/><rect x='60' y='61' width='24' height='20'/><rect x='87' y='61' width='52' height='20'/><rect x='142' y='61' width='24' height='20'/><rect x='169' y='61' width='26' height='20'/><rect x='5' y='84' width='24' height='20'/><rect x='32' y='84' width='52' height='20'/><rect x='87' y='84' width='24' height='20'/><rect x='114' y='84' width='52' height='20'/><rect x='169' y='84' width='26' height='20'/><rect x='5' y='107' width='52' height='20'/><rect x='60' y='107' width='24' height='20'/><rect x='87' y='107' width='52' height='20'/><rect x='142' y='107' width='24' height='20'/><rect x='169' y='107' width='26' height='20'/><rect x='5' y='130' width='24' height='20'/><rect x='32' y='130' width='52' height='20'/><rect x='87' y='130' width='24' height='20'/><rect x='114' y='130' width='52' height='20'/><rect x='169' y='130' width='26' height='20'/></g><text x='100' y='168' fill='white' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>TYPICAL SOLID</text><text x='100' y='184' fill='white' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>BRICK WALL</text></svg>" alt="Typical Solid Brick Wall">
+                            </div>
+                            <div class="wall-card" id="card-stone" onclick="selectWallTypeFromImage('2.23')">
+                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='180' height='180'><rect width='200' height='200' fill='%235d6370'/><g fill='%23e3dac9' stroke='%235d6370' stroke-width='2'><rect x='5' y='15' width='45' height='22'/><rect x='55' y='15' width='75' height='22'/><rect x='135' y='15' width='60' height='22'/><rect x='5' y='42' width='80' height='22'/><rect x='90' y='42' width='40' height='22'/><rect x='135' y='42' width='60' height='22'/><rect x='5' y='69' width='50' height='22'/><rect x='60' y='69' width='85' height='22'/><rect x='150' y='69' width='45' height='22'/><rect x='5' y='96' width='70' height='22'/><rect x='80' y='96' width='70' height='22'/><rect x='155' y='96' width='40' height='22'/><rect x='5' y='123' width='40' height='22'/><rect x='50' y='123' width='65' height='22'/><rect x='120' y='123' width='75' height='22'/></g><text x='100' y='168' fill='white' font-family='sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>STONE WALL</text><text x='100' y='184' fill='white' font-family='sans-serif' font-size='11' font-weight='bold' text-anchor='middle'>UNINSULATED</text></svg>" alt="Stone Wall Facade Layout">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="results-box" id="resultsBox">
+                    <div style="font-weight: bold; color: #1e40af; font-size: 14px; letter-spacing: 0.5px;">ESTIMATED PEAK LOSS</div>
+                    <div class="big-number" id="displayWatts">--- W</div>
+                    <div style="font-weight: bold; color: #475569; font-size: 20px;" id="displayKw">--- kW</div>
+                    <div id="statusMessage" class="status-text"></div>
+                    <div id="statusSubtext" class="status-subtext"></div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-function validateCustomerDetails() {
-    var name = document.getElementById('custName').value.trim();
-    var postcode = document.getElementById('custPostcode').value.trim();
+    <script>
+        function validateCustomerDetails() {
+            var houseIdent = document.getElementById('houseIdent').value.trim();
+            var postcode = document.getElementById('custPostcode').value.trim();
 
-    if (!name) {
-        alert('Please enter the Customer Name before performing any calculations.');
-        document.getElementById('custName').focus();
-        return false;
-    }
-
-    if (!postcode) {
-        alert('Please enter the Customer Postcode before performing any calculations.');
-        document.getElementById('custPostcode').focus();
-        return false;
-    }
-
-    return true;
-}
-
-function forcePre2000Era() {
-    document.getElementById('airEra').value = '1.5';
-}
-
-function autoCalcArea() {
-    var width = parseFloat(document.getElementById('calcWidth').value) || 0;
-    var depth = parseFloat(document.getElementById('calcDepth').value) || 0;
-    var floors = parseFloat(document.getElementById('calcFloors').value) || 1;
-
-    if (width > 0 || depth > 0) {
-        forcePre2000Era();
-    }
-
-    var calculatedM2 = width * depth * floors;
-    document.getElementById('calcResultDisplay').innerText = calculatedM2 % 1 === 0 ? calculatedM2 : calculatedM2.toFixed(2);
-}
-
-function populateFloorArea() {
-    if (!validateCustomerDetails()) return;
-
-    forcePre2000Era();
-
-    var width = parseFloat(document.getElementById('calcWidth').value) || 0;
-    var depth = parseFloat(document.getElementById('calcDepth').value) || 0;
-    var floors = parseFloat(document.getElementById('calcFloors').value) || 1;
-    var finalArea = width * depth * floors;
-
-    if (finalArea <= 0) {
-        alert('Please enter valid width, length, and floor parameters to generate an area value.');
-        return;
-    }
-
-    document.getElementById('area').value = finalArea % 1 === 0 ? finalArea : finalArea.toFixed(2);
-}
-
-function selectWallTypeFromImage(uValue) {
-    forcePre2000Era();
-    document.getElementById('wallSelection').value = uValue;
-    syncCardHighlights();
-}
-
-function syncCardHighlights() {
-    var currentValue = document.getElementById('wallSelection').value;
-    document.getElementById('card-cavity').classList.remove('selected-card');
-    document.getElementById('card-solid').classList.remove('selected-card');
-    document.getElementById('card-stone').classList.remove('selected-card');
-
-    if (currentValue === '0.56') {
-        document.getElementById('card-cavity').classList.add('selected-card');
-    } else if (currentValue === '2.11') {
-        document.getElementById('card-solid').classList.add('selected-card');
-    } else if (currentValue === '2.23') {
-        document.getElementById('card-stone').classList.add('selected-card');
-    }
-}
-
-function getGoogleSheetUrl() {
-    var scriptId = 'AKfycbyZgW4bpEKwYoeUOuqYrT_Fqp3_rs5S0_wUjhuXDgN0KwrWBulhCYikiNaldsEZInZD';
-    return 'https://script.google.com/macros/s/' + scriptId + '/exec';
-}
-
-function logCalculation(payload) {
-    return fetch(getGoogleSheetUrl(), {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(payload).toString()
-    }).catch(function(err) {
-        console.log('Silent Log Fail: ' + err);
-    });
-}
-
-function setResultState(calculatedKw, grandTotal) {
-    var resultsBox = document.getElementById('resultsBox');
-    var statusMessage = document.getElementById('statusMessage');
-    var statusSubtext = document.getElementById('statusSubtext');
-    var finalStatus = '';
-
-    document.getElementById('displayWatts').textContent = Math.round(grandTotal).toLocaleString() + ' W';
-    document.getElementById('displayKw').textContent = calculatedKw.toFixed(2) + ' kW';
-
-    if (calculatedKw <= 16.9) {
-        resultsBox.style.background = '#f0fdf4';
-        resultsBox.style.borderColor = '#bbf7d0';
-        statusMessage.style.color = '#16a34a';
-        statusMessage.textContent = 'suitable for survey';
-        statusSubtext.textContent = 'Within current design scope.';
-        finalStatus = 'Suitable for survey';
-    } else {
-        resultsBox.style.background = '#fef2f2';
-        resultsBox.style.borderColor = '#fecaca';
-        statusMessage.style.color = '#dc2626';
-        statusMessage.textContent = 'unsuitable for survey due to being outside of design scope';
-        statusSubtext.textContent = '';
-        finalStatus = 'Unsuitable for survey';
-    }
-
-    return finalStatus;
-}
-
-function runCalc() {
-    if (!validateCustomerDetails()) {
-        return;
-    }
-
-    try {
-        var areaInput = document.getElementById('area').value;
-        var totalArea = parseFloat(areaInput);
-
-        if (isNaN(totalArea) || totalArea <= 0) {
-            totalArea = 100;
-            document.getElementById('area').value = 100;
+            if (!houseIdent) {
+                alert('Please enter the House Number / Name before performing any calculations.');
+                document.getElementById('houseIdent').focus();
+                return false;
+            }
+            if (!postcode) {
+                alert('Please enter the Customer Postcode before performing any calculations.');
+                document.getElementById('custPostcode').focus();
+                return false;
+            }
+            return true;
         }
 
-        var airEraElement = document.getElementById('airEra');
-        var wallSelectionElement = document.getElementById('wallSelection');
-        var achRate = parseFloat(airEraElement.value);
-        var wallU = parseFloat(wallSelectionElement.value);
-        var typeMod = 1.0;
-        var storeys = 2;
-        var roofU = 0.21;
-        var dT = 23;
-        var floorU = 0.55;
-        var windowU = 2.80;
-        var standardCeilingHeight = 2.8;
-        var footprint = totalArea / storeys;
-        var perimeter = Math.sqrt(footprint) * 4 * typeMod;
-        var totalHeight = storeys * standardCeilingHeight;
-        var grossWall = perimeter * totalHeight;
-        var windowArea = grossWall * 0.15;
-        var netWall = grossWall - windowArea;
-        var wallL = wallU * netWall * dT;
-        var floorL = floorU * footprint * dT;
-        var roofL = roofU * footprint * dT;
-        var winL = windowU * windowArea * dT;
-        var fabricTotal = wallL + floorL + roofL + winL;
-        var propertyVolume = totalArea * standardCeilingHeight;
-        var ventilationLoss = propertyVolume * achRate * 0.33 * dT;
-        var grandTotal = fabricTotal + ventilationLoss;
-        var calculatedKw = grandTotal / 1000;
+        function forcePre2000Era() {
+            document.getElementById('airEra').value = '1.5';
+        }
 
-        var finalStatus = setResultState(calculatedKw, grandTotal);
+        function autoCalcArea() {
+            var width = parseFloat(document.getElementById('calcWidth').value) || 0;
+            var depth = parseFloat(document.getElementById('calcDepth').value) || 0;
+            var floors = parseFloat(document.getElementById('calcFloors').value) || 1;
 
-        logCalculation({
-            customerName: document.getElementById('custName').value.trim(),
-            postcode: document.getElementById('custPostcode').value.trim().toUpperCase(),
-            floorArea: totalArea,
-            propertyEra: airEraElement.options[airEraElement.selectedIndex].text,
-            wallType: wallSelectionElement.options[wallSelectionElement.selectedIndex].text,
-            watts: Math.round(grandTotal),
-            kw: calculatedKw.toFixed(2),
-            status: finalStatus
+            if (width > 0 || depth > 0) {
+                forcePre2000Era();
+            }
+
+            var calculatedM2 = width * depth * floors;
+            document.getElementById('calcResultDisplay').innerText = calculatedM2 % 1 === 0 ? calculatedM2 : calculatedM2.toFixed(2);
+        }
+
+        function populateFloorArea() {
+            if (!validateCustomerDetails()) return;
+
+            forcePre2000Era();
+
+            var width = parseFloat(document.getElementById('calcWidth').value) || 0;
+            var depth = parseFloat(document.getElementById('calcDepth').value) || 0;
+            var floors = parseFloat(document.getElementById('calcFloors').value) || 1;
+            var finalArea = width * depth * floors;
+
+            if (finalArea <= 0) {
+                alert('Please enter valid width, length, and floor parameters to generate an area value.');
+                return;
+            }
+            document.getElementById('area').value = finalArea % 1 === 0 ? finalArea : finalArea.toFixed(2);
+        }
+
+        function selectWallTypeFromImage(uValue) {
+            forcePre2000Era();
+            document.getElementById('wallSelection').value = uValue;
+            syncCardHighlights();
+        }
+
+        function syncCardHighlights() {
+            var currentValue = document.getElementById('wallSelection').value;
+            document.getElementById('card-cavity').classList.remove('selected-card');
+            document.getElementById('card-solid').classList.remove('selected-card');
+            document.getElementById('card-stone').classList.remove('selected-card');
+
+            if (currentValue === '0.56') {
+                document.getElementById('card-cavity').classList.add('selected-card');
+            } else if (currentValue === '2.11') {
+                document.getElementById('card-solid').classList.add('selected-card');
+            } else if (currentValue === '2.23') {
+                document.getElementById('card-stone').classList.add('selected-card');
+            }
+        }
+
+        function setResultState(calculatedKw, grandTotal) {
+            var resultsBox = document.getElementById('resultsBox');
+            var statusMessage = document.getElementById('statusMessage');
+            var statusSubtext = document.getElementById('statusSubtext');
+            var finalStatus = '';
+
+            document.getElementById('displayWatts').textContent = Math.round(grandTotal).toLocaleString() + ' W';
+            document.getElementById('displayKw').textContent = calculatedKw.toFixed(2) + ' kW';
+
+            if (calculatedKw <= 16.9) {
+                resultsBox.style.background = '#f0fdf4';
+                resultsBox.style.borderColor = '#bbf7d0';
+                statusMessage.style.color = '#16a34a';
+                statusMessage.textContent = 'suitable for survey';
+                statusSubtext.textContent = 'Within current design scope.';
+                finalStatus = 'Suitable for survey';
+            } else {
+                resultsBox.style.background = '#fef2f2';
+                resultsBox.style.borderColor = '#fecaca';
+                statusMessage.style.color = '#dc2626';
+                statusMessage.textContent = 'unsuitable for survey due to being outside of design scope';
+                statusSubtext.textContent = '';
+                finalStatus = 'Unsuitable for survey';
+            }
+            return finalStatus;
+        }
+
+        function runCalc() {
+            if (!validateCustomerDetails()) { return; }
+
+            try {
+                var areaInput = document.getElementById('area').value;
+                var totalArea = parseFloat(areaInput);
+
+                if (isNaN(totalArea) || totalArea <= 0) {
+                    totalArea = 100;
+                    document.getElementById('area').value = 100;
+                }
+
+                var airEraElement = document.getElementById('airEra');
+                var wallSelectionElement = document.getElementById('wallSelection');
+                var achRate = parseFloat(airEraElement.value);
+                var wallU = parseFloat(wallSelectionElement.value);
+                
+                var typeMod = 1.0;
+                var storeys = 2;
+                var roofU = 0.21;
+                var dT = 23;
+                var floorU = 0.55;
+                var windowU = 2.80;
+                var standardCeilingHeight = 2.8;
+                
+                var footprint = totalArea / storeys;
+                var perimeter = Math.sqrt(footprint) * 4 * typeMod;
+                var totalHeight = storeys * standardCeilingHeight;
+                var grossWall = perimeter * totalHeight;
+                var windowArea = grossWall * 0.15;
+                var netWall = grossWall - windowArea;
+                
+                var wallL = wallU * netWall * dT;
+                var floorL = floorU * footprint * dT;
+                var roofL = roofU * footprint * dT;
+                var winL = windowU * windowArea * dT;
+                var fabricTotal = wallL + floorL + roofL + winL;
+                
+                var propertyVolume = totalArea * standardCeilingHeight;
+                var ventilationLoss = propertyVolume * achRate * 0.33 * dT;
+                var grandTotal = fabricTotal + ventilationLoss;
+                var calculatedKw = grandTotal / 1000;
+
+                setResultState(calculatedKw, grandTotal);
+
+            } catch (err) {
+                alert('Calculation Error: ' + err.message);
+            }
+        }
+
+        function takeScreenshot() {
+            if (!validateCustomerDetails()) return;
+
+            var element = document.getElementById('captureTarget');
+            var houseLabel = document.getElementById('houseIdent').value.trim().replace(/\s+/g, '_');
+            var postcode = document.getElementById('custPostcode').value.trim().toUpperCase().replace(/\s+/g, '');
+            var options = { backgroundColor: '#f1f5f9', scale: 2, logging: false, useCORS: true };
+
+            html2canvas(element, options).then(function(canvas) {
+                var link = document.createElement('a');
+                link.download = 'HeatLoss_' + houseLabel + '_' + postcode + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(function(error) {
+                alert('Screenshot capturing mechanism failed: ' + error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            syncCardHighlights();
         });
-    } catch (err) {
-        alert('Calculation Error: ' + err.message);
-    }
-}
-
-function takeScreenshot() {
-    if (!validateCustomerDetails()) return;
-
-    var element = document.getElementById('captureTarget');
-    var customerName = document.getElementById('custName').value.trim().replace(/\s+/g, '_');
-    var postcode = document.getElementById('custPostcode').value.trim().toUpperCase().replace(/\s+/g, '');
-    var options = {
-        backgroundColor: '#f1f5f9',
-        scale: 2,
-        logging: false,
-        useCORS: true
-    };
-
-    html2canvas(element, options).then(function(canvas) {
-        var link = document.createElement('a');
-        link.download = 'HeatLoss_' + customerName + '_' + postcode + '.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    }).catch(function(error) {
-        alert('Screenshot capturing mechanism failed: ' + error);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    syncCardHighlights();
-});
-</script>
+    </script>
 </body>
 </html>
