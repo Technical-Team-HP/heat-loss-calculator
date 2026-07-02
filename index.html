@@ -50,19 +50,6 @@
     </style>
 </head>
 <body>
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-    <form id="sheetSubmitForm" action="https://script.google.com/a/macros/octopusenergy.services/s/AKfycbz-c2FWnGj1I7WQvfSmuaUuaXhemp3vP7HHNGpbX9BAxE7-O5TshO4fcCwDgEZKm-z5/exec" method="POST" target="hidden_iframe" style="display:none;">
-        <input type="text" name="houseIdent" id="formHouseIdent">
-        <input type="text" name="postcode" id="formPostcode">
-        <input type="text" name="totalArea" id="formTotalArea">
-        <input type="text" name="storeys" id="formStoreys">
-        <input type="text" name="wallU" id="formWallU">
-        <input type="text" name="achRate" id="formAchRate">
-        <input type="text" name="grandTotalWatts" id="formGrandTotalWatts">
-        <input type="text" name="calculatedKw" id="formCalculatedKw">
-        <input type="text" name="status" id="formStatus">
-    </form>
-
     <div class="wrapper" id="captureTarget">
         <h1>Heat Loss Estimator</h1>
         
@@ -273,29 +260,10 @@
             return finalStatus;
         }
 
-        function sendToGoogleSheetsForm(payload) {
-            // Populate hidden HTML fields to map onto the standard application/x-www-form-urlencoded pattern
-            document.getElementById('formHouseIdent').value = payload.houseIdent;
-            document.getElementById('formPostcode').value = payload.postcode;
-            document.getElementById('formTotalArea').value = payload.totalArea;
-            document.getElementById('formStoreys').value = payload.storeys;
-            document.getElementById('formWallU').value = payload.wallU;
-            document.getElementById('formAchRate').value = payload.achRate;
-            document.getElementById('formGrandTotalWatts').value = payload.grandTotalWatts;
-            document.getElementById('formCalculatedKw').value = payload.calculatedKw;
-            document.getElementById('formStatus').value = payload.status;
-
-            // Submit form cleanly to the hidden iframe
-            document.getElementById('sheetSubmitForm').submit();
-            console.log("Data routed out cleanly using standard HTML target parameters.");
-        }
-
         function runCalc() {
             if (!validateCustomerDetails()) { return; }
 
             try {
-                var houseIdent = document.getElementById('houseIdent').value.trim();
-                var postcode = document.getElementById('custPostcode').value.trim().toUpperCase();
                 var areaInput = document.getElementById('area').value;
                 var totalArea = parseFloat(areaInput);
 
@@ -308,49 +276,34 @@
                 var wallSelectionElement = document.getElementById('wallSelection');
                 var achRate = parseFloat(airEraElement.value);
                 var wallU = parseFloat(wallSelectionElement.value);
-                                
+                
                 var typeMod = 1.0;
-                var storeys = parseFloat(document.getElementById('calcFloors').value) || 2;
-                                
+                var storeys = 2;
                 var roofU = 0.21;
                 var dT = 23;
                 var floorU = 0.55;
                 var windowU = 2.80;
                 var standardCeilingHeight = 2.8;
-                                
+                
                 var footprint = totalArea / storeys;
                 var perimeter = Math.sqrt(footprint) * 4 * typeMod;
                 var totalHeight = storeys * standardCeilingHeight;
                 var grossWall = perimeter * totalHeight;
                 var windowArea = grossWall * 0.15;
                 var netWall = grossWall - windowArea;
-                                
+                
                 var wallL = wallU * netWall * dT;
                 var floorL = floorU * footprint * dT;
                 var roofL = roofU * footprint * dT;
                 var winL = windowU * windowArea * dT;
                 var fabricTotal = wallL + floorL + roofL + winL;
-                                
+                
                 var propertyVolume = totalArea * standardCeilingHeight;
                 var ventilationLoss = propertyVolume * achRate * 0.33 * dT;
                 var grandTotal = fabricTotal + ventilationLoss;
                 var calculatedKw = grandTotal / 1000;
 
-                var finalStatus = setResultState(calculatedKw, grandTotal);
-
-                var logPayload = {
-                    houseIdent: houseIdent,
-                    postcode: postcode,
-                    totalArea: totalArea,
-                    storeys: storeys,
-                    wallU: wallU,
-                    achRate: achRate,
-                    grandTotalWatts: Math.round(grandTotal),
-                    calculatedKw: parseFloat(calculatedKw.toFixed(2)),
-                    status: finalStatus
-                };
-
-                sendToGoogleSheetsForm(logPayload);
+                setResultState(calculatedKw, grandTotal);
 
             } catch (err) {
                 alert('Calculation Error: ' + err.message);
